@@ -1,0 +1,7 @@
+{
+  "name": "Sleuth",
+  "id": "897573542579499089",
+  "api": "1.0.0",
+  "main": "code.js",
+  "ui": "ui.html"
+}

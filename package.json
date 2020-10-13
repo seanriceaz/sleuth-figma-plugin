@@ -1,0 +1,25 @@
+{
+  "name": "figma-sleuth",
+  "version": "1.0.0",
+  "description": "Figma plugin to improve Design System usage in Figma files",
+  "main": "code.js",
+  "dependencies": {
+    "figma-plugin-ds": "^0.1.8"
+  },
+  "devDependencies": {
+    "@figma/plugin-typings": "^1.17.1"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/infusionsoft/figma-sleuth.git"
+  },
+  "author": "Sean Rice",
+  "license": "",
+  "bugs": {
+    "url": "https://github.com/infusionsoft/figma-sleuth/issues"
+  },
+  "homepage": "https://github.com/infusionsoft/figma-sleuth#readme"
+}
