@@ -8,7 +8,6 @@
     "css-loader": "^5.0.0",
     "figma-plugin-ds": "^0.1.8",
     "html-inline-css-webpack-plugin": "^1.9.0",
-    "html-webpack-inline-source-plugin": "^1.0.0-beta.2",
     "html-webpack-plugin": "^4.5.0",
     "mini-css-extract-plugin": "^1.1.1",
     "script-ext-html-webpack-plugin": "^2.1.4",
@@ -20,7 +19,7 @@
     "webpack-cli": "^4.1.0"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json"
+    "build": "npx webpack"
   },
   "repository": {
     "type": "git",
