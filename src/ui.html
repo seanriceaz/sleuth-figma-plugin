@@ -1,0 +1,41 @@
+<html>
+<head>
+</head>
+<body>
+<div id="loading">
+  <p class="icon icon--spinner icon--spin">Scanning your file</p>
+</div>
+<div id="afterLoaded" class="hidden">
+  <button class="button button--primary" id="Run">Refresh</button>
+  <div class="overall">
+    <h2 class="label">Overall Coverage</h2>
+    <p class="type type--xlarge" id="overallCoverage">100%</p>
+    <p class="type type--small" id="overallCount">100/100 layers</p>
+  </div>
+  <div class="coverage">
+    <h2 class="label">Color coverage</h2>
+    <p class="type type--xlarge" id="colorCoverage">100%</p>
+    <p class="type type--small" id="colorCount">100/100 layers</p>
+  </div>
+  <div class="coverage">
+    <h2 class="label">Type coverage</h2>
+    <p class="type type--xlarge" id="typeCoverage">100%</p>
+    <p class="type type--small" id="typeCount">100/100 layers</p>
+  </div>
+  <div id="pages">
+    <h2 class="label">Select layers to fix problems</h2>
+    <ul class="disclosure">
+      <li class="disclosure__item">
+        <div class="disclosure__label disclosure--section">Page Title</div> <!-- This item is styled as a section -->
+        <div class="disclosure__content">
+          <ul class="layer-info">
+            <li>
+              <span class="type type--small">Layer name trunc...</span> <span class="type type--small">No color</span> 
+            </li>
+          </ul>
+        </div>
+      </li>
+    </ul>
+  </div>
+</div>
+</html>
