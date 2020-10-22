@@ -57,7 +57,7 @@ module.exports = (env, argv) => ({
     }),
     new HTMLInlineCSSWebpackPlugin(),
     new ScriptExtHtmlWebpackPlugin({
-        inline: /\.js$/,
+        inline: "ui.js",
     })
   ],
 })

@@ -1,27 +1,61 @@
+p, h1, h2, h3, h4, h5 {
+    margin: 8px 0 ;
+    padding: 0;
+}
+
+p { margin: 4px 0; }
+
+.header {
+    display: flex;
+    border-bottom: 1px solid rgba(0,0,0,.09);
+    padding: 0 16px;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.stats {
+    display: flex;
+    padding: 0 16px;
+}
+.stats > div {
+    display: flex;
+    align-content: center;
+    align-items: center;
+    flex-direction: column;
+    text-align: center;
+}
+.stats h2, .stats .type--small{
+    color: rgba(0,0,0,.8);
+}
+
+.type.type--xxlarge {
+    font-size: 24px;
+}
+
 div, .layer-info li {
     transition: all .2s ease-in-out;
 }
-div{
-    opacity:1;
+div {
+    opacity: 1;
 }
 .hidden {
-    opacity:0;
-    height:0;
-    width:0;
-    overflow:hidden;
+    opacity: 0;
+    height: 0;
+    width: 0;
+    overflow: hidden;
 }
 
-.layer-info{
-    margin:0;
-    padding:0;
-    list-style-type:none;
-    display:block;
+.layer-info {
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+    display: block;
 }
-.layer-info li{
-    display:block;
-    border-bottom: 1px solid rgba(0,0,0.2);
+.layer-info li {
+    display: block;
+    border-bottom: 1px solid rgba(0,0,0,.2);
     background-color: rgba(0,0,0,0);
-    margin:0;
+    margin: 0;
     padding: 8px 4px;
 }
 .layer-info li:hover {
@@ -30,4 +64,18 @@ div{
 }
 .layer-info li:active {
     background-color: rgba(0,0,0,.12);
+}
+
+#pages h2 {
+    border-top: 1px solid rgba(0,0,0,.2);
+    border-bottom: 1px solid rgba(0,0,0,.2);
+    padding: 4px 16px;
+}
+
+.disclosure .disclosure__content {
+    -webkit-user-select: auto;
+    -moz-user-select: auto;
+    -ms-user-select: auto;
+    user-select: auto;
+    pointer-events: auto;
 }

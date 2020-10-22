@@ -3,6 +3,8 @@
 
 const counts = {
   layers: 0,
+  textLayers: 0,
+  paintLayers: 0,
   layersReferencingRemoteComponents: 0,
   layersReferencingRemotePaintStyles: 0,
   layersReferencingRemoteTextStyles: 0,
@@ -15,17 +17,20 @@ let badLayers = {};
 
 const countLayers = (node, pageId) => {
   if (node.children && node.type != "INSTANCE") { // Stop traversing the tree when we've got a component instance
-    node.children.forEach((layerNode, pageID) => {
-      countLayers(layerNode, pageID);
+    node.children.forEach((layerNode) => {
+      countLayers(layerNode, pageId);
     });
   }
   if (node.type != "GROUP"  && node.type != "DOCUMENT" && node.type != "PAGE") {
-    counts.layers++
+    counts.layers++;
     let badLayerComment = "";
+
     if (node.type == "INSTANCE" && node.mainComponent.remote) {
       counts.layersReferencingRemoteComponents++;
       counts.layersReferencingRemoteAnyStyles++;
     } else if (node.type == "TEXT"){
+      counts.textLayers++;
+
       if (node.textStyleId == figma.mixed || node.fillStyleId == figma.mixed) {
         badLayerComment = "Mixed Text Styles";
       } else if (node.textStyleId && node.fillStyleId) {
@@ -55,6 +60,8 @@ const countLayers = (node, pageId) => {
         badLayerComment = "No remote text or color style";
       }
     } else if (node.fills || node.strokes) {
+      counts.paintLayers++;
+
       if (node.fills == figma.mixed || node.strokes == figma.mixed) {
         badLayerComment = "Mixed stroke/fill styles";
       } else if (node.fills.length >0 && node.strokes.length >0) {
@@ -87,7 +94,7 @@ const countLayers = (node, pageId) => {
       }
     }
     if ( badLayerComment !== "") {
-      badLayers[node.id] = {
+      badLayers[pageId].layers[node.id] = {
         nodeId: node.id,
         pageId: pageId,
         comment: badLayerComment,
@@ -104,7 +111,7 @@ const countLayers = (node, pageId) => {
 // full browser environment (see documentation).
 
 // This shows the HTML page in "ui.html".
-figma.showUI(__html__);
+figma.showUI(__html__, {width: 400, height: 600});
 
 // Calls to "parent.postMessage" from within the HTML page will trigger this
 // callback. The callback will be passed the "pluginMessage" property of the
@@ -119,6 +126,8 @@ figma.ui.onmessage = msg => {
       let pages = [...file.children];
 
       counts.layers = 0;
+      counts.textLayers = 0;
+      counts.paintLayers = 0;
       counts.layersReferencingRemoteComponents = 0;
       counts.layersReferencingRemotePaintStyles = 0;
       counts.layersReferencingRemoteTextStyles = 0;
@@ -128,7 +137,15 @@ figma.ui.onmessage = msg => {
       // Let's count the layers
       pages.forEach(page => {
         if (page) {
-            countLayers(page, page.id);
+          badLayers[page.id] = {
+            page: {
+              id: page.id,
+              name: page.name,
+            },
+            layers: {}
+          };
+          countLayers(page, page.id);
+          console.log(badLayers[page.id]);
         }
     });
 
@@ -141,7 +158,16 @@ figma.ui.onmessage = msg => {
   }
 
   if (msg.type === 'Sleuth-Select') {
-
+    const page = figma.getNodeById(msg.pageId);
+    const selection = [];
+    selection.push(figma.getNodeById(msg.layerId));
+    if (page.type=="PAGE")
+    {
+      figma.currentPage = page;
+      page.selection = selection;
+    } else {
+      console.log ("Not a page");
+    }
   }
 
   // Make sure to close the plugin when you're done. Otherwise the plugin will
