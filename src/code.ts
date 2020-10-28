@@ -38,26 +38,26 @@ const countLayers = (node, pageId) => {
           counts.layersReferencingRemoteAnyStyles++;
           counts.layersReferencingRemoteTextStyles++;
         } else if (node.textStyleId.match(matchRemoteId)) {
-          badLayerComment = "No remote color style";
+          badLayerComment = "Use a library color";
         } else if (node.fillStyleId.match(matchRemoteId)) {
-          badLayerComment = "No remote text style";
+          badLayerComment = "Use a library text style";
         } else {
-          badLayerComment = "No remote text or color style";
+          badLayerComment = "Use library text style and color";
         }
       } else if (node.textStyleId) {
         if (node.textStyleId.match(matchRemoteId)) {
-          badLayerComment = "No remote text style";
+          badLayerComment = "Use a library text style";
         } else {
-          badLayerComment = "No remote text or color style";
+          badLayerComment = "Use library text style and color";
         }
       } else if (node.fillStyleId) {
         if (node.fillStyleId.match(matchRemoteId)) {
-          badLayerComment = "No remote color style";
+          badLayerComment = "Use a library color";
         } else {
-          badLayerComment = "No remote text or color style";
+          badLayerComment = "Use library text style and color";
         }
       } else {
-        badLayerComment = "No remote text or color style";
+        badLayerComment = "Use library text style and color";
       }
     } else if (node.fills || node.strokes) {
       counts.paintLayers++;
@@ -69,28 +69,29 @@ const countLayers = (node, pageId) => {
           counts.layersReferencingRemotePaintStyles++;
           counts.layersReferencingRemoteAnyStyles++;
         } else if (node.strokeStyleId.match(matchRemoteId)) {
-          badLayerComment = "No remote fill style";
+          badLayerComment = "Use a library fill color";
         } else if (node.fillStyleId.match(matchRemoteId)) {
-          badLayerComment = "No remote stroke style";
+          badLayerComment = "Use a library stroke color";
         } else {
-          badLayerComment = "No remote fill or stroke style";
+          badLayerComment = "Use library colors for fill and stroke";
         }
       } else if (node.fills.length >0) {
         if (node.fillStyleId.match(matchRemoteId)) {
           counts.layersReferencingRemotePaintStyles++;
           counts.layersReferencingRemoteAnyStyles++;
         } else {
-          badLayerComment = "No remote fill style";
+          badLayerComment = "Use a library fill color";
         }
       } else if (node.strokes.length >0) {
         if (node.strokeStyleId.match(matchRemoteId)) {
           counts.layersReferencingRemotePaintStyles++;
           counts.layersReferencingRemoteAnyStyles++;
         } else {
-          badLayerComment = "No remote stroke style";
+          badLayerComment = "Use a library stroke color";
         }
       } else {
-        badLayerComment = "Empty layer?";
+        // No fill or stroke at all. Usually this is a frame for layout only.
+        badLayerComment = "";
       }
     }
     if ( badLayerComment !== "") {
@@ -145,7 +146,7 @@ figma.ui.onmessage = msg => {
             layers: {}
           };
           countLayers(page, page.id);
-          console.log(badLayers[page.id]);
+          // console.log(badLayers[page.id]);
         }
     });
 
@@ -166,7 +167,7 @@ figma.ui.onmessage = msg => {
       figma.currentPage = page;
       page.selection = selection;
     } else {
-      console.log ("Not a page");
+      // console.log ("Not a page");
     }
   }
 
