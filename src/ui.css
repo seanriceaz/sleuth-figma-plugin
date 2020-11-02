@@ -1,3 +1,7 @@
+html, body {
+    min-height: 100%;
+}
+
 p, h1, h2, h3, h4, h5 {
     margin: 8px 0 ;
     padding: 0;
@@ -7,15 +11,36 @@ p { margin: 4px 0; }
 
 .header {
     display: flex;
-    border-bottom: 1px solid rgba(0,0,0,.09);
+    border-bottom: 1px solid rgba(0,0,0,.06);
     padding: 0 16px;
     justify-content: space-between;
     align-items: center;
 }
 
+#loading {
+    height: 300px;
+    display: flex;
+    align-content: center;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    position: absolute;
+    flex-direction: column;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    right: 0;
+}
+
+#loading, #afterLoaded {
+    transition: opacity .2s ease-in-out;
+    opacity: 1;
+}
+
 .stats {
     display: flex;
-    padding: 0 16px;
+    width: 100%;
+    padding: 0 16px 8px;
 }
 .stats > div {
     display: flex;
@@ -23,7 +48,15 @@ p { margin: 4px 0; }
     align-items: center;
     flex-direction: column;
     text-align: center;
+    flex-grow: 1;
 }
+.stats h2,
+.stats p {
+    text-align: center;
+    padding: 0;
+    width: auto;
+}
+
 .stats h2, .stats .type--small{
     color: rgba(0,0,0,.8);
 }
@@ -39,10 +72,11 @@ div {
     opacity: 1;
 }
 .hidden {
-    opacity: 0;
-    height: 0;
-    width: 0;
-    overflow: hidden;
+    opacity: 0 !important;
+    display: none !important;
+    height: 0 !important;
+    width: 0 !important;
+    overflow: hidden !important;
 }
 
 .layer-info {
@@ -59,7 +93,7 @@ div {
     padding: 8px 4px;
 }
 .layer-info li:hover {
-    background-color: rgba(0,0,0,.09);
+    background-color: rgba(0,0,0,.06);
     cursor: pointer;
 }
 .layer-info li:active {
@@ -78,4 +112,9 @@ div {
     -ms-user-select: auto;
     user-select: auto;
     pointer-events: auto;
+}
+
+.disclosure .disclosure__label:hover{
+    cursor: pointer;
+    background: rgba(0,0,0,.06);
 }

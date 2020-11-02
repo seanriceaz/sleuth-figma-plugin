@@ -1,4 +1,4 @@
-// This plugin will scan the layers in the ope file to determine how many of them
+// This plugin will scan the layers in the open file to determine how many of them
 // are library components, library text, or library colors
 
 const counts = {
@@ -46,13 +46,13 @@ const countLayers = (node, pageId) => {
         }
       } else if (node.textStyleId) {
         if (node.textStyleId.match(matchRemoteId)) {
-          badLayerComment = "Use a library text style";
+          badLayerComment = "Use a library color";
         } else {
           badLayerComment = "Use library text style and color";
         }
       } else if (node.fillStyleId) {
         if (node.fillStyleId.match(matchRemoteId)) {
-          badLayerComment = "Use a library color";
+          badLayerComment = "Use a library text style";
         } else {
           badLayerComment = "Use library text style and color";
         }
@@ -146,7 +146,6 @@ figma.ui.onmessage = msg => {
             layers: {}
           };
           countLayers(page, page.id);
-          // console.log(badLayers[page.id]);
         }
     });
 
@@ -166,8 +165,7 @@ figma.ui.onmessage = msg => {
     {
       figma.currentPage = page;
       page.selection = selection;
-    } else {
-      // console.log ("Not a page");
+      figma.viewport.scrollAndZoomIntoView(selection);
     }
   }
 
