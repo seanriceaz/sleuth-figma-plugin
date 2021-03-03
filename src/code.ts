@@ -235,20 +235,22 @@ const fixLayers = (pages) => {
 
 const fixTextStyle = (node) => {
   // Compare this text style to known remote text styles
-  for (const typeStyle in remoteType){
-    const style = remoteType[typeStyle];
-    var foundMatch = false;
-    if (node.fontName == style.fontName &&
-        node.fontSize == style.fontSize &&
-        node.lineHeight == style.lineHeight &&
-        node.paragraphSpacing == style.paragraphSpacing &&
-        node.paragraphIndent == style.paragraphIndent &&
-        node.letterSpacing == style.letterSpacing &&
-        !foundMatch)
-    {
-        node.textStyleId = style.id;
-        foundMatch = true;
-        counts.fixedStyles ++;
+  if (node.type=="TEXT" && !node.hasMissingFont) {
+    for (const typeStyle in remoteType){
+      const style = remoteType[typeStyle];
+      var foundMatch = false;
+      if (node.fontName == style.fontName &&
+          node.fontSize == style.fontSize &&
+          node.lineHeight == style.lineHeight &&
+          node.paragraphSpacing == style.paragraphSpacing &&
+          node.paragraphIndent == style.paragraphIndent &&
+          node.letterSpacing == style.letterSpacing &&
+          !foundMatch)
+      {
+          node.textStyleId = style.id;
+          foundMatch = true;
+          counts.fixedStyles ++;
+      }
     }
   }
 }
