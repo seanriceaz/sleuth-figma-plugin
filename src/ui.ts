@@ -93,5 +93,13 @@ document.getElementById('Run').onclick = () => {
   parent.postMessage({ pluginMessage: { type: 'Sleuth-Count' } }, '*');
 }
 
+document.getElementById('Autofix').onclick = () => {
+  // Handle clicks on the "Refresh" button
+  loading.className = "";
+  report.className = "hidden";
+
+  parent.postMessage({ pluginMessage: { type: 'Sleuth-Autofix' } }, '*');
+}
+
 // Run the scan for the first time
 parent.postMessage({ pluginMessage: { type: 'Sleuth-Count' } }, '*');

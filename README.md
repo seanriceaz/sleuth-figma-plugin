@@ -32,3 +32,9 @@ This is an open source plugin built mostly in javascript and HTML. If you want t
 5. Make sure you update `manifest.json` with your new plugin id (if you have one) etc.
 6. Edit the code in `/src`
 7. Compile it with `npm run build`
+
+## Changelog
+
+1.0.0 - Release!
+1.0.1 - Bug fixes
+1.1.0 - Add autofixing feature
