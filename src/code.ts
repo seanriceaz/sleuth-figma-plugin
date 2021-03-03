@@ -9,7 +9,11 @@ const counts = {
   layersReferencingRemotePaintStyles: 0,
   layersReferencingRemoteTextStyles: 0,
   layersReferencingRemoteAnyStyles: 0,
+  fixedStyles: 0,
 };
+
+const remotePaints = {};
+const remoteType = {};
 
 const matchRemoteId = /\,.+:.+/;
 
@@ -32,27 +36,34 @@ const countLayers = (node, pageId) => {
       counts.textLayers++;
 
       if (node.textStyleId == figma.mixed || node.fillStyleId == figma.mixed) {
-        badLayerComment = "Mixed Text Styles";
+        badLayerComment = "Mixed Styles";
       } else if (node.textStyleId && node.fillStyleId) {
         if (node.textStyleId.match(matchRemoteId) && node.fillStyleId.match(matchRemoteId)) {
           counts.layersReferencingRemoteAnyStyles++;
           counts.layersReferencingRemoteTextStyles++;
+
+          remotePaints[node.fillStyleId] = figma.getStyleById(node.fillStyleId); // Store this node's fill style for autofixing other layers
+          remoteType[node.textStyleId] = figma.getStyleById(node.textStyleId); // Store this node's text style for autofixing other layers
         } else if (node.textStyleId.match(matchRemoteId)) {
           badLayerComment = "Use a library color";
+          remoteType[node.textStyleId] = figma.getStyleById(node.textStyleId); // Store this node's text style for autofixing other layers
         } else if (node.fillStyleId.match(matchRemoteId)) {
           badLayerComment = "Use a library text style";
+          remotePaints[node.fillStyleId] = figma.getStyleById(node.fillStyleId); // Store this node's fill style for autofixing other layers
         } else {
           badLayerComment = "Use library text style and color";
         }
       } else if (node.textStyleId) {
         if (node.textStyleId.match(matchRemoteId)) {
           badLayerComment = "Use a library color";
+          remoteType[node.textStyleId] = figma.getStyleById(node.textStyleId); // Store this node's text style for autofixing other layers
         } else {
           badLayerComment = "Use library text style and color";
         }
       } else if (node.fillStyleId) {
         if (node.fillStyleId.match(matchRemoteId)) {
           badLayerComment = "Use a library text style";
+          remotePaints[node.fillStyleId] = figma.getStyleById(node.fillStyleId); // Store this node's fill style for autofixing other layers
         } else {
           badLayerComment = "Use library text style and color";
         }
@@ -63,31 +74,38 @@ const countLayers = (node, pageId) => {
       counts.paintLayers++;
 
       if (node.fills == figma.mixed || node.strokes == figma.mixed) {
-        badLayerComment = "Mixed stroke/fill styles";
+        badLayerComment = "Mixed styles";
       } else if (node.fills.length >0 && node.strokes.length >0) {
         if (node.fillStyleId.match(matchRemoteId) && node.strokeStyleId.match(matchRemoteId)) {
           counts.layersReferencingRemotePaintStyles++;
           counts.layersReferencingRemoteAnyStyles++;
+
+          remotePaints[node.fillStyleId] = figma.getStyleById(node.fillStyleId); // Store this node's fill style for autofixing other layers
+          remotePaints[node.strokeStyleId] = figma.getStyleById(node.strokeStyleId); // Store this node's stroke style for autofixing other layers
         } else if (node.strokeStyleId.match(matchRemoteId)) {
-          badLayerComment = "Use a library fill color";
+          badLayerComment = "Use a library fill";
+          remotePaints[node.strokeStyleId] = figma.getStyleById(node.strokeStyleId); // Store this node's stroke style for autofixing other layers
         } else if (node.fillStyleId.match(matchRemoteId)) {
-          badLayerComment = "Use a library stroke color";
+          badLayerComment = "Use a library stroke";
+          remotePaints[node.fillStyleId] = figma.getStyleById(node.fillStyleId); // Store this node's fill style for autofixing other layers
         } else {
-          badLayerComment = "Use library colors for fill and stroke";
+          badLayerComment = "Use library fill and stroke";
         }
       } else if (node.fills.length >0) {
         if (node.fillStyleId.match(matchRemoteId)) {
           counts.layersReferencingRemotePaintStyles++;
           counts.layersReferencingRemoteAnyStyles++;
+          remotePaints[node.fillStyleId] = figma.getStyleById(node.fillStyleId); // Store this node's fill style for autofixing other layers
         } else {
-          badLayerComment = "Use a library fill color";
+          badLayerComment = "Use a library fill";
         }
       } else if (node.strokes.length >0) {
         if (node.strokeStyleId.match(matchRemoteId)) {
           counts.layersReferencingRemotePaintStyles++;
           counts.layersReferencingRemoteAnyStyles++;
+          remotePaints[node.strokeStyleId] = figma.getStyleById(node.strokeStyleId); // Store this node's stroke style for autofixing other layers
         } else {
-          badLayerComment = "Use a library stroke color";
+          badLayerComment = "Use a library stroke";
         }
       } else {
         // No fill or stroke at all. Usually this is a frame for layout only.
@@ -107,6 +125,182 @@ const countLayers = (node, pageId) => {
   return counts;
 };
 
+function clone(val) {
+  const type = typeof val
+  if (val === null) {
+    return null
+  } else if (type === 'undefined' || type === 'number' ||
+             type === 'string' || type === 'boolean') {
+    return val
+  } else if (type === 'object') {
+    if (val instanceof Array) {
+      return val.map(x => clone(x))
+    } else if (val instanceof Uint8Array) {
+      return new Uint8Array(val)
+    } else {
+      let o = {}
+      for (const key in val) {
+        o[key] = clone(val[key])
+      }
+      return o
+    }
+  }
+  throw 'unknown'
+}
+
+const samePaints = (paintA, paintB) => {
+  var same = true;
+  if (paintA.length == paintB.length)
+  {
+    for(var i=0; i < paintA.length; i++ )
+    {
+      if (paintA[i].type == paintB[i].type)
+      {
+        if (paintA[i].type == "SOLID" )
+        {
+          if ( paintA[i].opacity != paintB[i].opacity ||
+            paintA[i].blendMode != paintB[i].blendMode ||
+            paintA[i].color.r != paintB[i].color.r ||
+            paintA[i].color.g != paintB[i].color.g ||
+            paintA[i].color.b != paintB[i].color.b)
+          {
+            same = false;
+          }
+        } else if (paintA[i].type == "IMAGE")
+        {
+          if ( paintA[i].opacity != paintB[i].opacity ||
+            paintA[i].blendMode != paintB[i].blendMode ||
+            paintA[i].scaleMode != paintB[i].scaleMode ||
+            paintA[i].imageTransform != paintB[i].imageTransform ||
+            paintA[i].scalingFactor != paintB[i].scalingFactor ||
+            paintA[i].imageHash != paintB[i].imageHash ||
+            paintA[i].filters.exposure != paintB[i].filters.exposure ||
+            paintA[i].filters.contrast != paintB[i].filters.contrast ||
+            paintA[i].filters.saturation != paintB[i].filters.saturation ||
+            paintA[i].filters.temperature != paintB[i].filters.temperature ||
+            paintA[i].filters.tint != paintB[i].filters.tint ||
+            paintA[i].filters.highlights != paintB[i].filters.highlights ||
+            paintA[i].filters.shadows != paintB[i].filters.shadows)
+          {
+            same = false;
+          }
+        } else if (paintA[i].type.indexOf("GRADIENT") >= 0 && paintB[i].type.indexOf("GRADIENT") >= 0)
+        {
+          if ( paintA[i].opacity != paintB[i].opacity ||
+            paintA[i].blendMode != paintB[i].blendMode ||
+            paintA[i].gradientTransform != paintB[i].gradientTransform ||
+            paintA[i].gradientStops.length != paintB[i].gradientStops.length)
+          {
+            same = false;
+          } else {
+
+            for (var stop = 0; stop < paintA[i].gradientStops.length; stop++){
+              if (paintA[i].gradientStops[stop].position != paintB[i].gradientStops[stop].position ||
+                paintA[i].gradientStops[stop].color.a != paintB[i].gradientStops[stop].color.a ||
+                paintA[i].gradientStops[stop].color.r != paintB[i].gradientStops[stop].color.r ||
+                paintA[i].gradientStops[stop].color.g != paintB[i].gradientStops[stop].color.g ||
+                paintA[i].gradientStops[stop].color.b != paintB[i].gradientStops[stop].color.b)
+              {
+                same = false;
+              }
+            }
+          }
+        }
+      } else {
+        same = false;
+      }
+    }
+  } else {
+    same = false;
+  }
+  return same;
+}
+
+const fixLayers = (pages) => {
+  counts.fixedStyles = 0;
+  for (const page in pages)
+  {
+    for (const layer in pages[page].layers) {
+      const thisLayer = pages[page].layers[layer];
+      const thisNode = figma.getNodeById(thisLayer.nodeId);
+      if (thisNode.type == "TEXT")
+      {
+        fixTextStyle(thisNode)
+      }
+      fixFillStyle(thisNode);
+      fixStrokeStyle(thisNode);
+    }
+  }
+}
+
+const fixTextStyle = (node) => {
+  // Compare this text style to known remote text styles
+  for (const typeStyle in remoteType){
+    const style = remoteType[typeStyle];
+    var foundMatch = false;
+    if (node.fontName == style.fontName &&
+        node.fontSize == style.fontSize &&
+        node.lineHeight == style.lineHeight &&
+        node.paragraphSpacing == style.paragraphSpacing &&
+        node.paragraphIndent == style.paragraphIndent &&
+        node.letterSpacing == style.letterSpacing &&
+        !foundMatch)
+    {
+        node.textStyleId = style.id;
+        foundMatch = true;
+        counts.fixedStyles ++;
+    }
+  }
+}
+
+const fixFillStyle = (node) => {
+  // Remove default blank background
+  if (node.fills.length > 0) {
+    if (!node.fills[0].visible &&
+      node.fills[0].type=="SOLID" &&
+      node.fills[0].color.r == 1 &&
+      node.fills[0].color.g == 1 &&
+      node.fills[0].color.b == 1 &&
+      node.fills[0].opacity == 1) {
+        const tempFills = clone(node.fills);
+        tempFills.splice(0,1);
+        node.fills = tempFills;
+        counts.fixedStyles ++;
+      }
+
+    // Compare this fill style to known remote styles
+    for (const fillStyle in remotePaints){
+      const style = remotePaints[fillStyle].paints;
+      var foundMatch = false;
+      if (!foundMatch){
+        if ( samePaints(node.fills, style ) ){
+
+          node.fillStyleId = remotePaints[fillStyle].id;
+          foundMatch = true;
+          counts.fixedStyles ++;
+        }
+      }
+    }
+  }
+}
+
+const fixStrokeStyle = (node) => {
+  if (node.strokes.length > 0) {
+    for (const strokeStyle in remotePaints){
+      const style = remotePaints[strokeStyle].paints;
+      var foundMatch = false;
+      if (!foundMatch){
+        if ( samePaints(node.strokes, style ) ){
+          node.strokeStyleId = remotePaints[strokeStyle].id;
+          foundMatch = true;
+          counts.fixedStyles ++;
+        }
+      }
+    }
+  }
+}
+
+
 // This file holds the main code for the plugins. It has access to the *document*.
 // You can access browser APIs in the <script> tag inside "ui.html" which has a
 // full browser environment (see documentation).
@@ -120,11 +314,15 @@ figma.showUI(__html__, {width: 400, height: 600});
 figma.ui.onmessage = msg => {
   // One way of distinguishing between different types of messages sent from
   // your HTML page is to use an object with a "type" property like this.
-    if (msg.type === 'Sleuth-Count') {
+    if (msg.type === 'Sleuth-Count' || msg.type === 'Sleuth-Autofix') {
       // First, reset the counts and pointers
 
       let file = figma.root;
       let pages = [...file.children];
+
+      if (msg.type === 'Sleuth-Autofix') {
+        fixLayers (badLayers);
+      }
 
       counts.layers = 0;
       counts.textLayers = 0;
@@ -175,5 +373,3 @@ figma.ui.onmessage = msg => {
     figma.closePlugin();
   }
 };
-
-

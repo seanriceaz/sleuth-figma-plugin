@@ -87,23 +87,29 @@ div {
 }
 .layer-info li {
     display: block;
-    border-bottom: 1px solid rgba(0,0,0,.2);
-    background-color: rgba(0,0,0,0);
+    background-color: rgba(218,235,247,0);
     margin: 0;
-    padding: 8px 4px;
-}
-.layer-info li:hover {
-    background-color: rgba(0,0,0,.06);
-    cursor: pointer;
-}
-.layer-info li:active {
-    background-color: rgba(0,0,0,.12);
+    padding: 8px 4px 8px var(--size-small);
+    border: 1px solid rgba(255,255,255,0);
 }
 
-#pages h2 {
-    border-top: 1px solid rgba(0,0,0,.2);
-    border-bottom: 1px solid rgba(0,0,0,.2);
+
+#pages section {
     padding: 4px 16px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid rgba(0,0,0,.06);
+    border-top: 1px solid rgba(0,0,0,.06);
+}
+
+#pages section span {
+    white-space: nowrap;
+    color: rgba(0,0,0,.8);
+    font-size: 12px;
+}
+
+#pages section h2 {
+    width: 100%;
 }
 
 .disclosure .disclosure__content {
@@ -112,9 +118,21 @@ div {
     -ms-user-select: auto;
     user-select: auto;
     pointer-events: auto;
+    padding: 0;
 }
 
-.disclosure .disclosure__label:hover{
-    cursor: pointer;
-    background: rgba(0,0,0,.06);
+.disclosure .disclosure__label{
+    border: 1px solid rgba(255,255,255,0);
+}
+
+.disclosure .disclosure__label:hover,
+.layer-info li:hover {
+    border: 1px solid #18A0Fb;
+}
+.disclosure .disclosure__label:active,
+.disclosure .disclosure__label:focus,
+.layer-info li:active,
+.layer-info li:focus {
+    background: rgba(218,235,247,1);
+    border: 1px solid rgba(255,255,255,0);
 }

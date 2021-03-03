@@ -24,6 +24,11 @@ const loadSleuth = (message) => {
   loading.className = "hidden";
   report.className = "";
 
+  // If we autofixed some things
+  if (message.fixedStyles > 0){
+    document.getElementById('Autofix').outerHTML = `<span>${message.fixedStyles} styles autofixed</span>`;
+  }
+
   // Set up disclosure panels
   const pages = Object.keys(message.badLayers);
 
@@ -91,6 +96,14 @@ document.getElementById('Run').onclick = () => {
   report.className = "hidden";
 
   parent.postMessage({ pluginMessage: { type: 'Sleuth-Count' } }, '*');
+}
+
+document.getElementById('Autofix').onclick = () => {
+  // Handle clicks on the "Refresh" button
+  loading.className = "";
+  report.className = "hidden";
+
+  parent.postMessage({ pluginMessage: { type: 'Sleuth-Autofix' } }, '*');
 }
 
 // Run the scan for the first time
