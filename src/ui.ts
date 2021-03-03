@@ -24,6 +24,11 @@ const loadSleuth = (message) => {
   loading.className = "hidden";
   report.className = "";
 
+  // If we autofixed some things
+  if (message.fixedStyles > 0){
+    document.getElementById('Autofix').outerHTML = `<span>${message.fixedStyles} styles autofixed</span>`;
+  }
+
   // Set up disclosure panels
   const pages = Object.keys(message.badLayers);
 

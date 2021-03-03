@@ -256,8 +256,8 @@ const fixTextStyle = (node) => {
 const fixFillStyle = (node) => {
   // Remove default blank background
   if (node.fills.length > 0) {
-    if (!node.fills[0].visible && 
-      node.fills[0].type=="SOLID" && 
+    if (!node.fills[0].visible &&
+      node.fills[0].type=="SOLID" &&
       node.fills[0].color.r == 1 &&
       node.fills[0].color.g == 1 &&
       node.fills[0].color.b == 1 &&
@@ -353,7 +353,6 @@ figma.ui.onmessage = msg => {
       badLayers: badLayers,
       ...counts
     });
-    console.log(counts.fixedStyles);
   }
 
   if (msg.type === 'Sleuth-Select') {
