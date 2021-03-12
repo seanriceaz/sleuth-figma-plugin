@@ -1,6 +1,6 @@
 {
   "name": "figma-sleuth",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Figma plugin to improve Design System usage in Figma files",
   "main": "code.js",
   "devDependencies": {

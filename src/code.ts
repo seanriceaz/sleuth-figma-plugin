@@ -9,7 +9,7 @@ const counts = {
   layersReferencingRemotePaintStyles: 0,
   layersReferencingRemoteTextStyles: 0,
   layersReferencingRemoteAnyStyles: 0,
-  fixedStyles: 0,
+  fixedStyles: -1,
 };
 
 const remotePaints = {};
@@ -235,16 +235,27 @@ const fixLayers = (pages) => {
 
 const fixTextStyle = (node) => {
   // Compare this text style to known remote text styles
-  if (node.type=="TEXT" && !node.hasMissingFont) {
-    for (const typeStyle in remoteType){
+  var skip = false;
+
+  if (typeof(node.textStyleId) === "string") {
+    if (node.textStyleId.match(matchRemoteId)) {
+      skip = true;
+    }
+  }
+
+  if (node.type=="TEXT" && !node.hasMissingFont && !skip) {
+    for (const typeStyle in remoteType) {
       const style = remoteType[typeStyle];
       var foundMatch = false;
-      if (node.fontName == style.fontName &&
+      if (node.fontName.family == style.fontName.family &&
+          node.fontName.style == style.fontName.style &&
           node.fontSize == style.fontSize &&
-          node.lineHeight == style.lineHeight &&
+          node.lineHeight.value == style.lineHeight.value &&
+          node.lineHeight.unit == style.lineHeight.unit &&
           node.paragraphSpacing == style.paragraphSpacing &&
           node.paragraphIndent == style.paragraphIndent &&
-          node.letterSpacing == style.letterSpacing &&
+          node.letterSpacing.unit == style.letterSpacing.unit &&
+          node.letterSpacing.value == style.letterSpacing.value &&
           !foundMatch)
       {
           node.textStyleId = style.id;
@@ -257,7 +268,15 @@ const fixTextStyle = (node) => {
 
 const fixFillStyle = (node) => {
   // Remove default blank background
-  if (node.fills.length > 0) {
+  var skip = false;
+
+  if (typeof(node.fillStyleId) === "string") {
+    if (node.fillStyleId.match(matchRemoteId)) {
+      skip = true;
+    }
+  }
+
+  if (node.fills.length > 0 && !skip) {
     if (!node.fills[0].visible &&
       node.fills[0].type=="SOLID" &&
       node.fills[0].color.r == 1 &&
@@ -271,11 +290,11 @@ const fixFillStyle = (node) => {
       }
 
     // Compare this fill style to known remote styles
-    for (const fillStyle in remotePaints){
+    for (const fillStyle in remotePaints) {
       const style = remotePaints[fillStyle].paints;
       var foundMatch = false;
-      if (!foundMatch){
-        if ( samePaints(node.fills, style ) ){
+      if (!foundMatch) {
+        if ( samePaints(node.fills, style ) ) {
 
           node.fillStyleId = remotePaints[fillStyle].id;
           foundMatch = true;
@@ -287,7 +306,16 @@ const fixFillStyle = (node) => {
 }
 
 const fixStrokeStyle = (node) => {
-  if (node.strokes.length > 0) {
+
+  var skip = false;
+
+  if (typeof(node.strokeStyleId) === "string") {
+    if (node.strokeStyleId.match(matchRemoteId)) {
+      skip = true;
+    }
+  }
+
+  if (node.strokes.length > 0 && !skip) {
     for (const strokeStyle in remotePaints){
       const style = remotePaints[strokeStyle].paints;
       var foundMatch = false;
@@ -324,6 +352,8 @@ figma.ui.onmessage = msg => {
 
       if (msg.type === 'Sleuth-Autofix') {
         fixLayers (badLayers);
+      } else {
+        counts.fixedStyles = -1;
       }
 
       counts.layers = 0;

@@ -25,8 +25,18 @@ const loadSleuth = (message) => {
   report.className = "";
 
   // If we autofixed some things
-  if (message.fixedStyles > 0){
-    document.getElementById('Autofix').outerHTML = `<span>${message.fixedStyles} styles autofixed</span>`;
+  if (message.fixedStyles >= 0){
+    document.getElementById('Autofix').outerHTML = `<span id="Autofix">${message.fixedStyles} styles autofixed</span>`;
+
+  } else {
+    document.getElementById('Autofix').outerHTML = `<button class="button button--primary" id="Autofix">Autofix</button>`;
+    document.getElementById('Autofix').onclick = () => {
+      // Handle clicks on the "Autofix" button
+      loading.className = "";
+      report.className = "hidden";
+
+      parent.postMessage({ pluginMessage: { type: 'Sleuth-Autofix' } }, '*');
+    }
   }
 
   // Set up disclosure panels
@@ -96,14 +106,6 @@ document.getElementById('Run').onclick = () => {
   report.className = "hidden";
 
   parent.postMessage({ pluginMessage: { type: 'Sleuth-Count' } }, '*');
-}
-
-document.getElementById('Autofix').onclick = () => {
-  // Handle clicks on the "Refresh" button
-  loading.className = "";
-  report.className = "hidden";
-
-  parent.postMessage({ pluginMessage: { type: 'Sleuth-Autofix' } }, '*');
 }
 
 // Run the scan for the first time
