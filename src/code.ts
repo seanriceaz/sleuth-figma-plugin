@@ -13,14 +13,16 @@ const counts = {
 };
 
 const remotePaints = {};
+let remotePaintKeys = [];
 const remoteType = {};
+let remoteTypeKeys = [];
 
 const matchRemoteId = /\,.+:.+/;
 
 let badLayers = {};
 
 const countLayers = (node, pageId) => {
-  if (node.children && node.type != "INSTANCE") { // Stop traversing the tree when we've got a component instance
+  if (node.children && node.type != "INSTANCE" && node.type != "BOOLEAN_OPERATION") { // Stop traversing the tree when we've got a component instance or boolean
     node.children.forEach((layerNode) => {
       countLayers(layerNode, pageId);
     });
@@ -149,181 +151,194 @@ function clone(val) {
 }
 
 const samePaints = (paintA, paintB) => {
-  var same = true;
+  this.same = true;
   if (paintA.length == paintB.length)
   {
-    for(var i=0; i < paintA.length; i++ )
+    for(let i=0; i < paintA.length; i++ )
     {
       if (paintA[i].type == paintB[i].type)
       {
-        if (paintA[i].type == "SOLID" )
-        {
-          if ( paintA[i].opacity != paintB[i].opacity ||
-            paintA[i].blendMode != paintB[i].blendMode ||
-            paintA[i].color.r != paintB[i].color.r ||
-            paintA[i].color.g != paintB[i].color.g ||
-            paintA[i].color.b != paintB[i].color.b)
-          {
-            same = false;
-          }
-        } else if (paintA[i].type == "IMAGE")
-        {
-          if ( paintA[i].opacity != paintB[i].opacity ||
-            paintA[i].blendMode != paintB[i].blendMode ||
-            paintA[i].scaleMode != paintB[i].scaleMode ||
-            paintA[i].imageTransform != paintB[i].imageTransform ||
-            paintA[i].scalingFactor != paintB[i].scalingFactor ||
-            paintA[i].imageHash != paintB[i].imageHash ||
-            paintA[i].filters.exposure != paintB[i].filters.exposure ||
-            paintA[i].filters.contrast != paintB[i].filters.contrast ||
-            paintA[i].filters.saturation != paintB[i].filters.saturation ||
-            paintA[i].filters.temperature != paintB[i].filters.temperature ||
-            paintA[i].filters.tint != paintB[i].filters.tint ||
-            paintA[i].filters.highlights != paintB[i].filters.highlights ||
-            paintA[i].filters.shadows != paintB[i].filters.shadows)
-          {
-            same = false;
-          }
-        } else if (paintA[i].type.indexOf("GRADIENT") >= 0 && paintB[i].type.indexOf("GRADIENT") >= 0)
-        {
-          if ( paintA[i].opacity != paintB[i].opacity ||
-            paintA[i].blendMode != paintB[i].blendMode ||
-            paintA[i].gradientTransform != paintB[i].gradientTransform ||
-            paintA[i].gradientStops.length != paintB[i].gradientStops.length)
-          {
-            same = false;
-          } else {
+        let type = paintA[i].type;
+        if (type.indexOf("GRADIENT") >= 0) {
+          type = "GRADIENT";
+        }
+        switch (type) {
+          case "SOLID":
+            if ( paintA[i].opacity != paintB[i].opacity ||
+              paintA[i].blendMode != paintB[i].blendMode ||
+              paintA[i].color.r != paintB[i].color.r ||
+              paintA[i].color.g != paintB[i].color.g ||
+              paintA[i].color.b != paintB[i].color.b)
+            {
+              this.same = false;
+            }
+          break;
+          case "GRADIENT":
+            if ( paintA[i].opacity != paintB[i].opacity ||
+              paintA[i].blendMode != paintB[i].blendMode ||
+              paintA[i].gradientTransform != paintB[i].gradientTransform ||
+              paintA[i].gradientStops.length != paintB[i].gradientStops.length)
+            {
+              this.same = false;
+            } else {
 
-            for (var stop = 0; stop < paintA[i].gradientStops.length; stop++){
-              if (paintA[i].gradientStops[stop].position != paintB[i].gradientStops[stop].position ||
-                paintA[i].gradientStops[stop].color.a != paintB[i].gradientStops[stop].color.a ||
-                paintA[i].gradientStops[stop].color.r != paintB[i].gradientStops[stop].color.r ||
-                paintA[i].gradientStops[stop].color.g != paintB[i].gradientStops[stop].color.g ||
-                paintA[i].gradientStops[stop].color.b != paintB[i].gradientStops[stop].color.b)
-              {
-                same = false;
+              for (let stop = 0; stop < paintA[i].gradientStops.length; stop++){
+                if (paintA[i].gradientStops[stop].position != paintB[i].gradientStops[stop].position ||
+                  paintA[i].gradientStops[stop].color.a != paintB[i].gradientStops[stop].color.a ||
+                  paintA[i].gradientStops[stop].color.r != paintB[i].gradientStops[stop].color.r ||
+                  paintA[i].gradientStops[stop].color.g != paintB[i].gradientStops[stop].color.g ||
+                  paintA[i].gradientStops[stop].color.b != paintB[i].gradientStops[stop].color.b)
+                {
+                  this.same = false;
+                }
               }
             }
-          }
+            break;
+          case "IMAGE":
+            if ( paintA[i].opacity != paintB[i].opacity ||
+              paintA[i].blendMode != paintB[i].blendMode ||
+              paintA[i].scaleMode != paintB[i].scaleMode ||
+              paintA[i].imageTransform != paintB[i].imageTransform ||
+              paintA[i].scalingFactor != paintB[i].scalingFactor ||
+              paintA[i].imageHash != paintB[i].imageHash ||
+              paintA[i].filters.exposure != paintB[i].filters.exposure ||
+              paintA[i].filters.contrast != paintB[i].filters.contrast ||
+              paintA[i].filters.saturation != paintB[i].filters.saturation ||
+              paintA[i].filters.temperature != paintB[i].filters.temperature ||
+              paintA[i].filters.tint != paintB[i].filters.tint ||
+              paintA[i].filters.highlights != paintB[i].filters.highlights ||
+              paintA[i].filters.shadows != paintB[i].filters.shadows)
+            {
+              this.same = false;
+            }
+            break;
+          default:
+            this.same = false;
+          break;
         }
       } else {
-        same = false;
+        this.same = false;
       }
     }
   } else {
-    same = false;
+    this.same = false;
   }
-  return same;
+  return this.same;
 }
 
 const fixLayers = (pages) => {
   counts.fixedStyles = 0;
-  for (const page in pages)
+  this.pageKeys = Object.keys(pages);
+  for (let pageKey = 0; pageKey < this.pageKeys.length; pageKey++)
   {
-    for (const layer in pages[page].layers) {
-      const thisLayer = pages[page].layers[layer];
-      const thisNode = figma.getNodeById(thisLayer.nodeId);
-      if (thisNode.type == "TEXT")
-      {
-        fixTextStyle(thisNode)
-      }
-      fixFillStyle(thisNode);
-      fixStrokeStyle(thisNode);
+    console.log("page: " + this.pageKeys[pageKey]);
+    const layerKeys = Object.keys(pages[this.pageKeys[pageKey]].layers);
+    console.log ("layers: " + layerKeys.length);
+    for (let layerKey = 0; layerKey < layerKeys.length; layerKey++)
+    {
+      this.nodeId = pages[this.pageKeys[pageKey]].layers[layerKeys[layerKey]].nodeId;
+      console.log("node ID: " + this.nodeId + " count: " + layerKey);
+      fixTextStyle(this.nodeId);
+      fixFillStyle(this.nodeId);
+      fixStrokeStyle(this.nodeId);
     }
   }
 }
 
-const fixTextStyle = (node) => {
+const fixTextStyle = (nodeId) => {
   // Compare this text style to known remote text styles
-  var skip = false;
-
-  if (typeof(node.textStyleId) === "string") {
-    if (node.textStyleId.match(matchRemoteId)) {
-      skip = true;
-    }
-  }
-
-  if (node.type=="TEXT" && !node.hasMissingFont && !skip) {
-    for (const typeStyle in remoteType) {
-      const style = remoteType[typeStyle];
-      var foundMatch = false;
-      if (node.fontName.family == style.fontName.family &&
-          node.fontName.style == style.fontName.style &&
-          node.fontSize == style.fontSize &&
-          node.lineHeight.value == style.lineHeight.value &&
-          node.lineHeight.unit == style.lineHeight.unit &&
-          node.paragraphSpacing == style.paragraphSpacing &&
-          node.paragraphIndent == style.paragraphIndent &&
-          node.letterSpacing.unit == style.letterSpacing.unit &&
-          node.letterSpacing.value == style.letterSpacing.value &&
-          !foundMatch)
-      {
-          node.textStyleId = style.id;
-          foundMatch = true;
-          counts.fixedStyles ++;
+  this.skip = false;
+  this.node = figma.getNodeById(nodeId);
+  if (this.node.type == "TEXT"){
+    if (typeof(this.node.textStyleId) === "string") {
+      if (this.node.textStyleId.match(matchRemoteId)) {
+        this.skip = true;
       }
     }
-  }
-}
 
-const fixFillStyle = (node) => {
-  // Remove default blank background
-  var skip = false;
-
-  if (typeof(node.fillStyleId) === "string") {
-    if (node.fillStyleId.match(matchRemoteId)) {
-      skip = true;
-    }
-  }
-
-  if (node.fills.length > 0 && !skip) {
-    if (!node.fills[0].visible &&
-      node.fills[0].type=="SOLID" &&
-      node.fills[0].color.r == 1 &&
-      node.fills[0].color.g == 1 &&
-      node.fills[0].color.b == 1 &&
-      node.fills[0].opacity == 1) {
-        const tempFills = clone(node.fills);
-        tempFills.splice(0,1);
-        node.fills = tempFills;
-        counts.fixedStyles ++;
-      }
-
-    // Compare this fill style to known remote styles
-    for (const fillStyle in remotePaints) {
-      const style = remotePaints[fillStyle].paints;
-      var foundMatch = false;
-      if (!foundMatch) {
-        if ( samePaints(node.fills, style ) ) {
-
-          node.fillStyleId = remotePaints[fillStyle].id;
-          foundMatch = true;
-          counts.fixedStyles ++;
+    if (!this.node.hasMissingFont && !this.skip) {
+      for (let typeStyleKey = 0; typeStyleKey < remoteTypeKeys.length; typeStyleKey++ ) {
+        const style = remoteType[remoteTypeKeys[typeStyleKey]];
+        if(this.node.fontName !== figma.mixed && this.node.lineHeight !== figma.mixed && this.node.letterSpacing !== figma.mixed)
+        {
+          if (this.node.fontName.family == style.fontName.family &&
+              this.node.fontName.style == style.fontName.style &&
+              this.node.fontSize == style.fontSize &&
+              this.node.lineHeight.unit == style.lineHeight.unit &&
+              this.node.paragraphSpacing == style.paragraphSpacing &&
+              this.node.paragraphIndent == style.paragraphIndent &&
+              this.node.letterSpacing.unit == style.letterSpacing.unit &&
+              this.node.letterSpacing.value == style.letterSpacing.value)
+          {
+            if (this.node.lineHeight.unit == "AUTO" || this.node.lineHeight.value == style.lineHeight.value){
+              this.node.textStyleId = style.id;
+              counts.fixedStyles ++;
+              break;
+            }
+          }
         }
       }
     }
   }
 }
 
-const fixStrokeStyle = (node) => {
+const fixFillStyle = (nodeId) => {
+  // Remove default blank background
+  this.skip = false;
+  this.node = figma.getNodeById(nodeId);
+  if (this.node.type != "GROUP"  && this.node.type != "DOCUMENT" && this.node.type != "PAGE" && this.node.type != "INSTANCE" && this.node.type != "SLICE"){
 
-  var skip = false;
+    if (typeof(this.node.fillStyleId) === "string") {
+      if (this.node.fillStyleId.match(matchRemoteId)) {
+        this.skip = true;
+      }
+    }
+    if (this.node.fills !== figma.mixed){
+      if (this.node.fills.length > 0 && !this.skip) {
+        if (!this.node.fills[0].visible &&
+          this.node.fills[0].type=="SOLID" &&
+          this.node.fills[0].color.r == 1 &&
+          this.node.fills[0].color.g == 1 &&
+          this.node.fills[0].color.b == 1 &&
+          this.node.fills[0].opacity == 1) {
+            const tempFills = clone(this.node.fills);
+            tempFills.splice(0,1);
+            this.node.fills = tempFills;
+            counts.fixedStyles ++;
+          }
 
-  if (typeof(node.strokeStyleId) === "string") {
-    if (node.strokeStyleId.match(matchRemoteId)) {
-      skip = true;
+        // Compare this fill style to known remote styles
+        for (let fillKey = 0; fillKey < remotePaintKeys.length; fillKey++) {
+          const style = remotePaints[remotePaintKeys[fillKey]].paints;
+          if ( samePaints(this.node.fills, style ) ) {
+            this.node.fillStyleId = remotePaints[remotePaintKeys[fillKey]].id;
+            counts.fixedStyles ++;
+            break;
+          }
+        }
+      }
     }
   }
+}
 
-  if (node.strokes.length > 0 && !skip) {
-    for (const strokeStyle in remotePaints){
-      const style = remotePaints[strokeStyle].paints;
-      var foundMatch = false;
-      if (!foundMatch){
-        if ( samePaints(node.strokes, style ) ){
-          node.strokeStyleId = remotePaints[strokeStyle].id;
-          foundMatch = true;
+const fixStrokeStyle = (nodeId) => {
+
+  this.skip = false;
+  this.node = figma.getNodeById(nodeId);
+  if (this.node.type != "GROUP"  && this.node.type != "DOCUMENT" && this.node.type != "PAGE" && this.node.type != "INSTANCE" && this.node.type != "SLICE"){
+    if (typeof(this.node.strokeStyleId) === "string") {
+      if (this.node.strokeStyleId.match(matchRemoteId)) {
+        this.skip = true;
+      }
+    }
+
+    if (this.node.strokes.length > 0 && !this.skip) {
+      for (let strokeKey = 0; strokeKey < remotePaintKeys.length; strokeKey++){
+        const style = remotePaints[remotePaintKeys[strokeKey]].paints;
+        if ( samePaints(this.node.strokes, style ) ){
+          this.node.strokeStyleId = remotePaints[remotePaintKeys[strokeKey]].id;
           counts.fixedStyles ++;
+          break;
         }
       }
     }
@@ -351,6 +366,8 @@ figma.ui.onmessage = msg => {
       let pages = [...file.children];
 
       if (msg.type === 'Sleuth-Autofix') {
+        remoteTypeKeys = Object.keys(remoteType);
+        remotePaintKeys = Object.keys(remotePaints);
         fixLayers (badLayers);
       } else {
         counts.fixedStyles = -1;
